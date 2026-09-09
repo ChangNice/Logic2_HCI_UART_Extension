@@ -182,41 +182,27 @@ class GUI:
         btn_uart_port_clear.pack(side='left', padx=5, pady=5)
 
     def tx_trigger_validate(self, value):
-        value_str = value
-
-        if value_str == '':
-            return True
-
-        try:
-            value_str = [x for x in value_str.split(' ')]
-            if value_str[-1] == '':
-                value_str.pop()
-            values = [int(x, 16) for x in value_str]
-
-            if len(values) > 0 and all(0 <= x <= 255 for x in values):
-                return True
-        except:
-            return False
-    
-        return False
+        return self._trigger_validate(value)
 
     def rx_trigger_validate(self, value):
-        value_str = value
+        return self._trigger_validate(value)
 
-        if value_str == '':
+    def _trigger_validate(self, value):
+        # Accept hex bytes, '|' to separate alternative patterns, and '??' wildcards.
+        if value == '':
             return True
 
         try:
-            value_str = [x for x in value_str.split(' ')]
-            if value_str[-1] == '':
-                value_str.pop()
-            values = [int(x, 16) for x in value_str]
-            if len(values) > 0 and all(0 <= x <= 255 for x in values):
-                return True
-        except:
+            for chunk in value.split('|'):
+                tokens = [t for t in chunk.split(' ') if t != '']
+                for t in tokens:
+                    if t in ('?', '??'):
+                        continue
+                    if not (0 <= int(t, 16) <= 255):
+                        return False
+            return True
+        except ValueError:
             return False
-    
-        return False
 
     def __ui_save_config(self, root):
         # Save Options
