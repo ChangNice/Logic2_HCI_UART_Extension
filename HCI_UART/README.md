@@ -27,3 +27,21 @@ the next good alignment - which is what makes captures that span a board reset
 | Direction Mode | Auto | `Auto` labels each packet from its type (Command -> H->C, Event -> C->H), so swapped TX/RX probes are corrected automatically. `Manual` always uses Role Choice. |
 | Sync Packets | 3 | Consecutive valid packets required to trust an alignment. Higher is stricter but leaves more packets un-decoded at the very end of a capture. |
 | Trigger Re-arm | On Resync | `On Resync` re-requires the trigger after every loss of sync, so each session after a board reset filters its own pre-Reset traffic. `Once` triggers a single time. |
+
+## Tests
+
+```
+python HCI_UART/test_hla.py
+```
+
+Runs the real `HighLevelAnalyzer.py` against a stub of the `saleae.analyzers` API, so it
+needs no Logic 2 install, no hardware and no third-party package. The cases are the
+stateful paths a capture exercises only occasionally and the GUI cannot show you were
+wrong about: sync on a stream that starts mid-packet, resync after a UART error, trigger
+re-arm across a board reset, whole-packet trigger matching (the bytes of a trigger can
+also appear inside another packet's payload), direction correction from the packet type,
+and an ACL packet whose length field spans two bytes.
+
+Because the saleae API is stubbed, these tests say nothing about the analyzer's fit with
+a particular Logic 2 build - `EMIT_MULTIPLE` at the top of `HighLevelAnalyzer.py` is
+exactly such a mismatch, and only a real capture can show it.
